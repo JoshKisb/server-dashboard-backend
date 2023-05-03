@@ -6,11 +6,11 @@ const router = express.Router();
 
 const serverData = new ServerData([]);
 
-router.get('/servers', (req, res) => {
+router.get('/', (req, res) => {
   res.send(serverData.getServers());
 });
 
-router.get('/servers/:id', (req, res) => {
+router.get('/:id', (req, res) => {
   const id = req.params.id;
   const server = serverData.getServerById(id);
   if (server) {
@@ -20,9 +20,9 @@ router.get('/servers/:id', (req, res) => {
   }
 });
 
-router.post('/servers', (req, res) => {
+router.post('/', (req, res) => {
   const server: Server = req.body;
-  if (!server.id || !server.name) {
+  if (!server.name) {
     res.sendStatus(400);
   } else {
     serverData.addServer(server);
@@ -30,15 +30,14 @@ router.post('/servers', (req, res) => {
   }
 });
 
-router.put('/servers/:id', (req, res) => {
+router.put('/:id', (req, res) => {
   const id = req.params.id;
   const server: Server = req.body;
   if (!server.name) {
     res.sendStatus(400);
   } else {
-    serverData.updateServer(id, server);
-    const updatedServer = serverData.getServerById(id);
-    if (updatedServer) {
+    const updatedServer = serverData.updateServer(id, server);
+    if (!!updatedServer) {
       res.send(updatedServer);
     } else {
       res.sendStatus(404);
@@ -46,7 +45,7 @@ router.put('/servers/:id', (req, res) => {
   }
 });
 
-router.delete('/servers/:id', (req, res) => {
+router.delete('/:id', (req, res) => {
   const id = req.params.id;
   serverData.deleteServer(id);
   res.sendStatus(204);

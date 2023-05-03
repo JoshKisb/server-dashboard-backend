@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import { Server } from '../types';
 
 export class ServerData {
@@ -16,13 +17,15 @@ export class ServerData {
   }
 
   public addServer(server: Server): void {
+    server.id = uuidv4();
     this.servers.push(server);
   }
 
-  public updateServer(id: string, server: Server): void {
+  public updateServer(id: string, server: Server): Server | undefined {
     const index = this.servers.findIndex(s => s.id === id);
     if (index !== -1) {
-      this.servers[index] = server;
+      this.servers[index] = {id, ...server};
+      return this.servers[index];
     }
   }
 
