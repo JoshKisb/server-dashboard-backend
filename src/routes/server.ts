@@ -1,17 +1,18 @@
 import express, { Request, Response } from 'express';
-import { ServerData } from '../data/servers';
+import { ServerData, useDB } from '../data/servers';
 import { Server } from '../types';
 
 const router = express.Router();
 
-const serverData = new ServerData([]);
 
 router.get('/', (req, res) => {
+  const serverData: ServerData = useDB();
   res.send(serverData.getServers());
 });
 
 router.get('/:id', (req, res) => {
   const id = req.params.id;
+  const serverData: ServerData = useDB();
   const server = serverData.getServerById(id);
   if (server) {
     res.send(server);
@@ -22,6 +23,7 @@ router.get('/:id', (req, res) => {
 
 router.post('/', (req, res) => {
   const server: Server = req.body;
+  const serverData: ServerData = useDB();
   if (!server.name) {
     res.sendStatus(400);
   } else {
@@ -33,6 +35,7 @@ router.post('/', (req, res) => {
 router.put('/:id', (req, res) => {
   const id = req.params.id;
   const server: Server = req.body;
+  const serverData: ServerData = useDB();
   if (!server.name) {
     res.sendStatus(400);
   } else {
@@ -47,6 +50,7 @@ router.put('/:id', (req, res) => {
 
 router.delete('/:id', (req, res) => {
   const id = req.params.id;
+  const serverData: ServerData = useDB();
   serverData.deleteServer(id);
   res.sendStatus(204);
 });
