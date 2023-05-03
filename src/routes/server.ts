@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import { ServerData, useDB } from '../data/servers';
 import { Server } from '../types';
+import { connections, SSHConnection } from '../data/connections';
 
 const router = express.Router();
 
@@ -54,5 +55,20 @@ router.delete('/:id', (req, res) => {
   serverData.deleteServer(id);
   res.sendStatus(204);
 });
+
+router.post('/:id/connect', (req, res) => {
+  const id = req.params.id;
+  const serverData: ServerData = useDB();
+  const server = serverData.getServerById(id);
+  if (server) {
+    if (!(id in connections)) {
+      connections[id] = new SSHConnection(server);
+    }
+    connections[id].connect();
+    res.sendStatus(200);
+  } else {
+    res.sendStatus(404);
+  }
+})
 
 export { router as serverRouter };

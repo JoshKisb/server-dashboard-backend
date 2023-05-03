@@ -6,3 +6,7 @@ export interface Server {
    password?: string;
    username?: string;
  }
+
+ interface ServerInfo {
+  
+ }
