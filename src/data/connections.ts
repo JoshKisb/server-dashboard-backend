@@ -18,6 +18,48 @@ export class SSHConnection {
          password: this.server.password,
       });
    }
+
+   async disconnect() {
+      await this.ssh.dispose();
+   }
+
+   async isConnected() {
+      return this.ssh.isConnected();
+   }
+
+   async getContainers() {
+      return new Promise(async (resolve, reject) => {
+         const result = await this.ssh.execCommand('lxc list --format json');
+         if (result.stderr) {
+            reject(result.stderr);
+         } else {
+            const containers = JSON.parse(result.stdout);
+            resolve(containers);
+         }
+      });
+   }
+
+   async getInfo() {
+      return new Promise(async (resolve, reject) => {
+         const result = await this.ssh.execCommand('lsb_release -a | grep Description');
+         if (result.stderr) {
+            reject(result.stderr);
+         } else {
+            resolve(result.stdout);
+         }
+      });
+   }
+
+   async exec(command: string) {
+      return new Promise(async (resolve, reject) => {
+         const result = await this.ssh.execCommand(command);
+         if (result.stderr) {
+            reject(result.stderr);
+         } else {
+            resolve(result.stdout);
+         }
+      });
+   }
 }
 
 export const connections: {[id: string]: SSHConnection} = {}

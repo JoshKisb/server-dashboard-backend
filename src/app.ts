@@ -9,7 +9,7 @@ import { createDB } from "./data/servers";
 const app: Application = express();
 
 app.use(bodyParser.json());
-app.use(cors());
+app.use(cors({origin:'*', credentials : true}));
 app.use(morgan("combined"));
 
 

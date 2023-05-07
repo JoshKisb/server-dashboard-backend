@@ -16,6 +16,25 @@ router.get('/:id', (req, res) => {
   const serverData: ServerData = useDB();
   const server = serverData.getServerById(id);
   if (server) {
+    let connection = null;
+    if (!(id in connections)) {
+      connection = new SSHConnection(server);
+      connections[id] = connection;
+    }
+    try {
+      connection.connect();
+      const response = {
+        ...server,
+        info: {
+          os: connection.getInfo(),
+          containers: connection.getContainers(),
+        },
+      }
+      connection.disconnect();
+      res.send(response);
+    } catch (e) {
+      console.log(e);
+    }
     res.send(server);
   } else {
     res.sendStatus(404);
