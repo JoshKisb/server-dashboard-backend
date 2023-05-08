@@ -62,7 +62,7 @@ export class SSHConnection {
             const info: any = {};
             for (const line of result.stdout.split('\n')) {
                const [key, val] = line.split(/\s*=\s*(.+)/)
-               info[key] = JSON.parse(val)
+               info[key] = val.replace(/^"/, "").replace(/"$/, "")
            }
             resolve(info);
          }
