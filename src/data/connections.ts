@@ -11,12 +11,16 @@ export class SSHConnection {
    }
 
    async connect() {
-      await this.ssh.connect({
-         host: this.server.ip,
-         port: this.server.port || 22,
-         username: this.server.username,
-         password: this.server.password,
-      });
+      try {
+         await this.ssh.connect({
+            host: this.server.ip,
+            port: this.server.port || 22,
+            username: this.server.username,
+            password: this.server.password,
+         });
+      } catch (e) {
+         throw new Error(`Failed to connect to host: ${this.server.ip}`);
+      }
    }
 
    async disconnect() {
