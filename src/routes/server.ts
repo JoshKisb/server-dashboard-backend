@@ -20,6 +20,8 @@ router.get('/:id', async (req, res) => {
     if (!(id in connections)) {
       connection = new SSHConnection(server);
       connections[id] = connection;
+    } else {
+      connection = connections[id];
     }
     try {
       connection.connect();
