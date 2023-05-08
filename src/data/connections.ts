@@ -52,7 +52,7 @@ export class SSHConnection {
 
    async getInfo() {
       return new Promise(async (resolve, reject) => {
-         const result = await this.ssh.execCommand('lsb_release -a | grep Description');
+         const result = await this.ssh.execCommand('cat /etc/os-release');
          if (result.stderr) {
             reject(result.stderr);
          } else {
