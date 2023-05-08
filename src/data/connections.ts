@@ -1,4 +1,4 @@
-import { Server } from "../types";
+import { Container, Server } from "../types";
 import { NodeSSH } from "node-ssh";
 
 export class SSHConnection {
@@ -44,7 +44,10 @@ export class SSHConnection {
          if (result.stderr) {
             reject(result.stderr);
          } else {
-            const containers = JSON.parse(result.stdout);
+            const containers: Container = JSON.parse(result.stdout).map((c: any) => ({
+               name: c.name,
+               state: c.status,
+            }));
             resolve(containers);
          }
       });
@@ -56,7 +59,12 @@ export class SSHConnection {
          if (result.stderr) {
             reject(result.stderr);
          } else {
-            resolve(result.stdout);
+            const info: any = {};
+            for (const line of result.stdout.split('\n')) {
+               const [key, val] = line.split(/\s*=\s*(.+)/)
+               info[key] = JSON.parse(val)
+           }
+            resolve(info);
          }
       });
    }

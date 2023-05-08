@@ -14,7 +14,7 @@ export interface Server {
   containers: Container[];
  }
 
- interface Container {
+export interface Container {
   name: string;
   state: string;
  }
