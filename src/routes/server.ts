@@ -67,8 +67,16 @@ router.post('/:id/run', async (req, res) => {
       } else if (command === 'stop') {
         await connection.stopContainer(container);
       }
+
+      const response = {
+        ...server,
+        info: {
+          os: await connection.getInfo(),
+          containers: await connection.getContainers(),
+        },
+      }
       connection.disconnect();
-      res.sendStatus(200);
+      res.send(response);
     } catch (e) {
       console.log(e);
       res.status(400).send({ error: e })
