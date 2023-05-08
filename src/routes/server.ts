@@ -26,7 +26,7 @@ router.get('/:id', (req, res) => {
       const response = {
         ...server,
         info: {
-          os: connection.getInfo(),
+          os: "Ubuntu",
           containers: connection.getContainers(),
         },
       }
