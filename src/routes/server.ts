@@ -11,7 +11,7 @@ router.get('/', (req, res) => {
   res.send(serverData.getServers());
 });
 
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
   const id = req.params.id;
   const serverData: ServerData = useDB();
   const server = serverData.getServerById(id);
@@ -26,8 +26,8 @@ router.get('/:id', (req, res) => {
       const response = {
         ...server,
         info: {
-          os: "Ubuntu",
-          containers: connection.getContainers(),
+          os: await connection.getInfo(),
+          containers: await connection.getContainers(),
         },
       }
       connection.disconnect();
