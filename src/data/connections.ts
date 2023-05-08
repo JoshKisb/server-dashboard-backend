@@ -10,6 +10,10 @@ export class SSHConnection {
       this.server = server;
    }
 
+   setServer(server: Server) {
+      this.server = server;
+   }
+
    async connect() {
       return new Promise<void>(async (resolve, reject) => {
          this.ssh.connect({

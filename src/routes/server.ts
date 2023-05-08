@@ -22,6 +22,7 @@ router.get('/:id', async (req, res) => {
       connections[id] = connection;
     } else {
       connection = connections[id];
+      connection.setServer(server);
     }
     try {
       await connection.connect();
