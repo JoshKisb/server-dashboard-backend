@@ -34,8 +34,9 @@ router.get('/:id', (req, res) => {
       res.send(response);
     } catch (e) {
       console.log(e);
+      res.status(400).send({ error: e })
     }
-    res.send(server);
+    // res.send(server);
   } else {
     res.sendStatus(404);
   }
