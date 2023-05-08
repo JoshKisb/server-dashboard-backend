@@ -45,6 +45,42 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+router.post('/:id/run', async (req, res) => {
+  const id = req.params.id;
+  const command = req.body.script;
+  const container = req.body.container;
+  const serverData: ServerData = useDB();
+  const server = serverData.getServerById(id);
+  if (server && command && container) {
+    let connection = null;
+    if (!(id in connections)) {
+      connection = new SSHConnection(server);
+      connections[id] = connection;
+    } else {
+      connection = connections[id];
+      connection.setServer(server);
+    }
+    try {
+      await connection.connect();
+      if (command === 'start') {
+        await connection.startContainer(container);
+      } else if (command === 'stop') {
+        await connection.stopContainer(container);
+      }
+      connection.disconnect();
+      res.sendStatus(200);
+    } catch (e) {
+      console.log(e);
+      res.status(400).send({ error: e })
+    }
+    // res.send(server);
+  } else {
+    res.sendStatus(404);
+  }
+});
+
+
+
 router.post('/', (req, res) => {
   const server: Server = req.body;
   const serverData: ServerData = useDB();

@@ -53,6 +53,28 @@ export class SSHConnection {
       });
    }
 
+   async startContainer(name: string) {
+      return new Promise<void>(async (resolve, reject) => {
+         const result = await this.ssh.execCommand(`lxc start ${name}`);
+         if (result.stderr) {
+            reject(result.stderr);
+         } else {
+            resolve();
+         }
+      });
+   }
+
+   async stopContainer(name: string) {
+      return new Promise<void>(async (resolve, reject) => {
+         const result = await this.ssh.execCommand(`lxc stop ${name}`);
+         if (result.stderr) {
+            reject(result.stderr);
+         } else {
+            resolve();
+         }
+      });
+   }
+
    async getInfo() {
       return new Promise(async (resolve, reject) => {
          const result = await this.ssh.execCommand('cat /etc/os-release');
