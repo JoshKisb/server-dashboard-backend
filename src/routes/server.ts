@@ -24,7 +24,7 @@ router.get('/:id', async (req, res) => {
       connection = connections[id];
     }
     try {
-      connection.connect();
+      await connection.connect();
       const response = {
         ...server,
         info: {
