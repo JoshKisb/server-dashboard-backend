@@ -33,6 +33,7 @@ router.get('/:id', async (req, res) => {
           memory: await connection.getMemory(),
           disk: await connection.getDisk(),
           containers: await connection.getContainers(),
+          uptime: await connection.getUptime(),
         },
       }
       connection.disconnect();
