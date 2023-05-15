@@ -30,6 +30,8 @@ router.get('/:id', async (req, res) => {
         ...server,
         info: {
           os: await connection.getInfo(),
+          memory: await connection.getMemory(),
+          disk: await connection.getDisk(),
           containers: await connection.getContainers(),
         },
       }

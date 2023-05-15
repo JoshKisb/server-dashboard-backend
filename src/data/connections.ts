@@ -1,6 +1,18 @@
 import { Container, Server } from "../types";
 import { NodeSSH } from "node-ssh";
 
+
+const units = ['bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
+   
+function niceBytes(x: string){
+  let l = 0, n = parseInt(x, 10) || 0;
+
+  while(n >= 1024 && ++l){
+      n = n/1024;
+  }
+  
+  return(n.toFixed(n < 10 && l > 0 ? 1 : 0) + ' ' + units[l]);
+}
 export class SSHConnection {
    private ssh: NodeSSH;
    private server: Server;
@@ -87,6 +99,59 @@ export class SSHConnection {
                info[key] = val.replace(/^"/, "").replace(/"$/, "")
            }
             resolve(info);
+         }
+      });
+   }
+
+   async getUptime() {
+      return new Promise(async (resolve, reject) => {
+         const result = await this.ssh.execCommand('uptime -p');
+         if (result.stderr) {
+            reject(result.stderr);
+         } else {
+            resolve(result.stdout.replace('\n', '').replace('up ', ''));
+         }
+      });
+   }
+
+   async getMemory() {
+      return new Promise(async (resolve, reject) => {
+         const result = await this.ssh.execCommand('free -h');
+         if (result.stderr) {
+            reject(result.stderr);
+         } else {
+            const lines = result.stdout.split('\n');
+            const mem = lines[1].split(/\s+/);
+            const swap = lines[2].split(/\s+/);
+            resolve({
+               total: mem[1],
+               used: mem[2],
+               free: mem[3],
+               shared: mem[4],
+               cache: mem[5],
+               available: mem[6],
+               swapTotal: swap[1],
+               swapUsed: swap[2],
+               swapFree: swap[3],
+            });
+         }
+      });
+   }
+
+   async getDisk() {
+      return new Promise(async (resolve, reject) => {
+         const result = await this.ssh.execCommand('df -h');
+         if (result.stderr) {
+            reject(result.stderr);
+         } else {
+            const lines = result.stdout.split('\n');
+            const disk = lines[1].split(/\s+/);
+            resolve({
+               total: disk[1],
+               used: disk[2],
+               free: disk[3],
+               percent: disk[4],
+            });
          }
       });
    }
