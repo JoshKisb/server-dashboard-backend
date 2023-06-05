@@ -29,28 +29,36 @@ export class SSHConnection {
 
    async connectWebTerminal() {
       return new Promise<void>(async (resolve, reject) => {
-         const socket = getSocket();
+         const io = getSocket();
          await this.connect();
          this.ssh
             .requestShell()
             .then((stream) => {
+
+               io.on("connection", (socket) => {
+                  console.log("a user connected");
+                  socket.on("disconnect", () => {
+                     console.log("user disconnected");
+                  });
               
-               // Receive terminal input from the client
-               socket.on("terminalInput", (input: string) => {
-                  console.log("Received input:", input);
-                  stream.write(input);
-               });
+              
+                  // Receive terminal input from the client
+                  socket.on("terminalInput", (input: string) => {
+                     console.log("Received input:", input);
+                     stream.write(input);
+                  });
 
-               // Receive output from the SSH shell stream
-               stream.on("data", (data: Buffer) => {
-                  const output = data.toString();
-                  socket.emit("terminalOutput", output);
-               });
+                  // Receive output from the SSH shell stream
+                  stream.on("data", (data: Buffer) => {
+                     const output = data.toString();
+                     socket.emit("terminalOutput", output);
+                  });
 
-               // Handle disconnect event
-               socket.on("disconnect", () => {
-                  // Perform any cleanup or necessary actions on client disconnect
-                  stream.end();
+                  // Handle disconnect event
+                  socket.on("disconnect", () => {
+                     // Perform any cleanup or necessary actions on client disconnect
+                     stream.end();
+                  });
                });
 
                console.log("Web terminal connected successfully.");
