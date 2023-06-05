@@ -5,20 +5,23 @@ import { Server } from "socket.io";
 let io: Server = null;
 
 export const setupSocket = (app: Application) => {
+   console.log("setupSocket");
    const server = http.createServer(app);
    io = new Server(server);
 
-   io.on('connection', (socket) => {
-    console.log('a user connected');
-    socket.on('disconnect', () => {
-      console.log('user disconnected');
-    });
-  });
+   io.on("connection", (socket) => {
+      console.log("a user connected");
+      socket.on("disconnect", () => {
+         console.log("user disconnected");
+      });
+   });
+
+   console.log("setupSocket done");
 
    return { server, io };
 };
 
 export const getSocket = () => {
-  return io;
-}
-
+   console.log("getSocket", io);
+   return io;
+};
