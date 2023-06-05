@@ -37,6 +37,7 @@ export class SSHConnection {
               
                // Receive terminal input from the client
                socket.on("terminalInput", (input: string) => {
+                  console.log("Received input:", input);
                   stream.write(input + "\n");
                });
 
