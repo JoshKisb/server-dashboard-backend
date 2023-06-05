@@ -8,7 +8,7 @@ export const setupSocket = (app: Application) => {
    console.log("setupSocket");
    const server = http.createServer(app);
    io = new Server(server, {
-      path: "/ws",
+      path: "/serverdash-ws",
    });
 
    io.on("connection", (socket) => {
