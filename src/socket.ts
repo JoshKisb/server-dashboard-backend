@@ -22,6 +22,6 @@ export const setupSocket = (app: Application) => {
 };
 
 export const getSocket = () => {
-   console.log("getSocket", io);
+   // console.log("getSocket", io);
    return io;
 };
