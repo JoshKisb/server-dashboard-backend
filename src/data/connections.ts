@@ -28,8 +28,9 @@ export class SSHConnection {
    }
 
    async connectWebTerminal() {
-      return new Promise<void>((resolve, reject) => {
+      return new Promise<void>(async (resolve, reject) => {
          const socket = getSocket();
+         await this.connect();
          this.ssh
             .requestShell()
             .then((stream) => {
