@@ -1,7 +1,7 @@
 import http from "http";
 import { Application } from "express";
 import { Server } from "socket.io";
-import { shellStreams } from "./data/connections";
+import { SSHConnection, shellStreams } from "./data/connections";
 
 let io: Server = null;
 
@@ -21,7 +21,15 @@ export const setupSocket = (app: Application) => {
       socket.on("terminalInput", (data) => {
          console.log("Received input:", data);
          const { server, input } = data;
-         const stream = shellStreams[server].getStream();
+         
+            let shellStream = null;
+         if (!(server in shellStreams)) {
+            shellStream = new SSHConnection(server);
+            shellStreams[server] = shellStream;
+         } else {
+            shellStream = shellStreams[server];
+         }
+         const stream = shellStream.getStream();
          stream.write(input);
       });
 
