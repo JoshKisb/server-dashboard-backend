@@ -1,17 +1,18 @@
+import { getSocket } from "../socket";
 import { Container, Server } from "../types";
 import { NodeSSH } from "node-ssh";
 
+const units = ["bytes", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"];
 
-const units = ['bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
-   
-function niceBytes(x: string){
-  let l = 0, n = parseInt(x, 10) || 0;
+function niceBytes(x: string) {
+   let l = 0,
+      n = parseInt(x, 10) || 0;
 
-  while(n >= 1024 && ++l){
-      n = n/1024;
-  }
-  
-  return(n.toFixed(n < 10 && l > 0 ? 1 : 0) + ' ' + units[l]);
+   while (n >= 1024 && ++l) {
+      n = n / 1024;
+   }
+
+   return n.toFixed(n < 10 && l > 0 ? 1 : 0) + " " + units[l];
 }
 export class SSHConnection {
    private ssh: NodeSSH;
@@ -26,19 +27,55 @@ export class SSHConnection {
       this.server = server;
    }
 
+   async connectWebTerminal() {
+      return new Promise<void>((resolve, reject) => {
+         const socket = getSocket();
+         this.ssh
+            .requestShell()
+            .then((stream) => {
+               // Receive terminal input from the client
+               socket.on("terminalInput", (input: string) => {
+                  stream.write(input + "\n");
+               });
+
+               // Receive output from the SSH shell stream
+               stream.on("data", (data: Buffer) => {
+                  const output = data.toString();
+                  socket.emit("terminalOutput", output);
+               });
+
+               // Handle disconnect event
+               socket.on("disconnect", () => {
+                  // Perform any cleanup or necessary actions on client disconnect
+                  stream.end();
+               });
+
+               console.log("Web terminal connected successfully.");
+               resolve();
+            })
+            .catch((err: Error) => {
+               console.error("Web terminal connection error:", err);
+               reject(err);
+            });
+      });
+   }
+
    async connect() {
       return new Promise<void>(async (resolve, reject) => {
-         this.ssh.connect({
-            host: this.server.ip,
-            port: this.server.port || 22,
-            username: this.server.username,
-            password: this.server.password,
-         }).then(() => {
-            resolve();
-         }).catch((e) => {
-            console.log(e);
-            reject(`Failed to connect to host: ${this.server.ip}`);
-         }); 
+         this.ssh
+            .connect({
+               host: this.server.ip,
+               port: this.server.port || 22,
+               username: this.server.username,
+               password: this.server.password,
+            })
+            .then(() => {
+               resolve();
+            })
+            .catch((e) => {
+               console.log(e);
+               reject(`Failed to connect to host: ${this.server.ip}`);
+            });
       });
    }
 
@@ -52,7 +89,7 @@ export class SSHConnection {
 
    async getContainers() {
       return new Promise(async (resolve, reject) => {
-         const result = await this.ssh.execCommand('lxc list --format json');
+         const result = await this.ssh.execCommand("lxc list --format json");
          if (result.stderr) {
             reject(result.stderr);
          } else {
@@ -89,15 +126,15 @@ export class SSHConnection {
 
    async getInfo() {
       return new Promise(async (resolve, reject) => {
-         const result = await this.ssh.execCommand('cat /etc/os-release');
+         const result = await this.ssh.execCommand("cat /etc/os-release");
          if (result.stderr) {
             reject(result.stderr);
          } else {
             const info: any = {};
-            for (const line of result.stdout.split('\n')) {
-               const [key, val] = line.split(/\s*=\s*(.+)/)
-               info[key] = val.replace(/^"/, "").replace(/"$/, "")
-           }
+            for (const line of result.stdout.split("\n")) {
+               const [key, val] = line.split(/\s*=\s*(.+)/);
+               info[key] = val.replace(/^"/, "").replace(/"$/, "");
+            }
             resolve(info);
          }
       });
@@ -105,22 +142,22 @@ export class SSHConnection {
 
    async getUptime() {
       return new Promise(async (resolve, reject) => {
-         const result = await this.ssh.execCommand('uptime -p');
+         const result = await this.ssh.execCommand("uptime -p");
          if (result.stderr) {
             reject(result.stderr);
          } else {
-            resolve(result.stdout.replace('\n', '').replace('up ', ''));
+            resolve(result.stdout.replace("\n", "").replace("up ", ""));
          }
       });
    }
 
    async getMemory() {
       return new Promise(async (resolve, reject) => {
-         const result = await this.ssh.execCommand('free -h');
+         const result = await this.ssh.execCommand("free -h");
          if (result.stderr) {
             reject(result.stderr);
          } else {
-            const lines = result.stdout.split('\n');
+            const lines = result.stdout.split("\n");
             const mem = lines[1].split(/\s+/);
             const swap = lines[2].split(/\s+/);
             resolve({
@@ -140,11 +177,11 @@ export class SSHConnection {
 
    async getDisk() {
       return new Promise(async (resolve, reject) => {
-         const result = await this.ssh.execCommand('df -h');
+         const result = await this.ssh.execCommand("df -h");
          if (result.stderr) {
             reject(result.stderr);
          } else {
-            const lines = result.stdout.split('\n');
+            const lines = result.stdout.split("\n");
             const disk = lines[1].split(/\s+/);
             resolve({
                total: disk[1],
@@ -168,4 +205,4 @@ export class SSHConnection {
    }
 }
 
-export const connections: {[id: string]: SSHConnection} = {}
+export const connections: { [id: string]: SSHConnection } = {};

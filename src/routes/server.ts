@@ -6,6 +6,7 @@ import { connections, SSHConnection } from '../data/connections';
 const router = express.Router();
 
 
+
 router.get('/', (req, res) => {
   const serverData: ServerData = useDB();
   res.send(serverData.getServers());
@@ -47,6 +48,25 @@ router.get('/:id', async (req, res) => {
     res.sendStatus(404);
   }
 });
+
+router.get('/:id/terminal', async (req, res) => {
+  const id = req.params.id;
+  const serverData: ServerData = useDB();
+  const server = serverData.getServerById(id);
+  if (server) {
+    let connection = new SSHConnection(server);
+    try {
+      await connection.connectWebTerminal();      
+      res.send({ success: true });
+    } catch (e) {
+      console.log(e);
+      res.status(400).send({ error: e })
+    }
+  } else {
+    res.sendStatus(404);
+  }
+});
+
 
 router.post('/:id/run', async (req, res) => {
   const id = req.params.id;
