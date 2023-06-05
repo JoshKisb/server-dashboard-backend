@@ -7,7 +7,9 @@ let io: Server = null;
 export const setupSocket = (app: Application) => {
    console.log("setupSocket");
    const server = http.createServer(app);
-   io = new Server(server);
+   io = new Server(server, {
+      path: "/ws",
+   });
 
    io.on("connection", (socket) => {
       console.log("a user connected");
