@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
 import { ServerData, useDB } from '../data/servers';
 import { Server } from '../types';
-import { connections, SSHConnection } from '../data/connections';
+import { connections, SSHConnection, shellStreams } from '../data/connections';
 
 const router = express.Router();
 
@@ -54,9 +54,16 @@ router.get('/:id/terminal', async (req, res) => {
   const serverData: ServerData = useDB();
   const server = serverData.getServerById(id);
   if (server) {
-    let connection = new SSHConnection(server);
+    let shellStream = null;
+    if (!(id in shellStreams)) {
+      shellStream = new SSHConnection(server);
+      shellStreams[id] = shellStream;
+    } else {
+      shellStream = shellStreams[id];
+      shellStream.setServer(server);
+    }
     try {
-      await connection.connectWebTerminal();      
+      await shellStream.connectWebTerminal();      
       res.send({ success: true });
     } catch (e) {
       console.log(e);

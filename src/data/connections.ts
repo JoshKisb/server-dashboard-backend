@@ -17,10 +17,15 @@ function niceBytes(x: string) {
 export class SSHConnection {
    private ssh: NodeSSH;
    private server: Server;
+   private stream: any;
 
    constructor(server: Server) {
       this.ssh = new NodeSSH();
       this.server = server;
+   }
+
+   getStream() {
+      return this.stream;
    }
 
    setServer(server: Server) {
@@ -34,31 +39,12 @@ export class SSHConnection {
          this.ssh
             .requestShell()
             .then((stream) => {
+               this.stream = stream;
 
-               io.on("connection", (socket) => {
-                  console.log("a user connected");
-                  socket.on("disconnect", () => {
-                     console.log("user disconnected");
-                  });
-              
-              
-                  // Receive terminal input from the client
-                  socket.on("terminalInput", (input: string) => {
-                     console.log("Received input:", input);
-                     stream.write(input);
-                  });
-
-                  // Receive output from the SSH shell stream
-                  stream.on("data", (data: Buffer) => {
-                     const output = data.toString();
-                     socket.emit("terminalOutput", output);
-                  });
-
-                  // Handle disconnect event
-                  socket.on("disconnect", () => {
-                     // Perform any cleanup or necessary actions on client disconnect
-                     stream.end();
-                  });
+               // Receive output from the SSH shell stream
+               stream.on("data", (data: Buffer) => {
+                  const output = data.toString();
+                  io.sockets.emit("terminalOutput", output);
                });
 
                console.log("Web terminal connected successfully.");
@@ -217,3 +203,4 @@ export class SSHConnection {
 }
 
 export const connections: { [id: string]: SSHConnection } = {};
+export const shellStreams: { [id: string]: any } = {};
