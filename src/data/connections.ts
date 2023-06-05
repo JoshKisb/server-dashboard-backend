@@ -34,9 +34,7 @@ export class SSHConnection {
          this.ssh
             .requestShell()
             .then((stream) => {
-               stream.write("export TERM=xterm\n");
-               stream.write("pwd\n");
-               socket.emit("terminalOutput", "test");
+              
                // Receive terminal input from the client
                socket.on("terminalInput", (input: string) => {
                   stream.write(input + "\n");
